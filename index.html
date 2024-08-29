@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=no,minimal-ui"
+        content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=no, minimal-ui"
     />
     <title>DIY水印相机</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -22,16 +22,17 @@
         #videoContainer {
             position: relative;
             width: 380px;
-            height: 500px; /* Fixed height for video and image */
-            overflow: hidden; /* Hide overflow content */
+            height: 500px; /* 初始固定高度 */
+            overflow: hidden;
             background-color: black;
         }
         #videoElement, #imageElement {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 100%; /* Always take full width */
-            height: auto; /* Adjust height automatically */
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 确保图片填充容器 */
             transform: translate(-50%, -50%);
         }
         #watermark {
@@ -68,11 +69,11 @@
         <video id="videoElement" autoplay playsinline></video>
         <img id="imageElement" style="display:none;">
         <div id="watermark" style="margin-bottom: -16.3px;">
-            <img src="bj.png" style="position: initial;width: 380px;margin-bottom: -113.3px;margin-left: -15px;">
+            <img src="bj.png" style="position: initial; width: 380px; margin-bottom: -113.3px; margin-left: -15px;">
             <div id="time"></div>
-            <div id="watermarkTextb" style="transform: scaleX(0.9);padding-top: 8px;margin-left: -10px;padding-bottom: 1px;letter-spacing: 0.1px;font-weight: bold;">广东省东莞市虎门镇</div>
-            <div id="watermarkTextc" style="padding-bottom: 19px;padding-left: 10px;letter-spacing: 0px;">获取中</div>
-            <div id="fw" style="transform: scaleX(0.8);letter-spacing: 0px;margin-left: 303px;font-size: 6.5px;margin-bottom: 0px;font-weight: bold;margin-top: -1.8px;">获取中</div>
+            <div id="watermarkTextb" style="transform: scaleX(0.9); padding-top: 8px; margin-left: -10px; padding-bottom: 1px; letter-spacing: 0.1px; font-weight: bold;">广东省东莞市虎门镇</div>
+            <div id="watermarkTextc" style="padding-bottom: 19px; padding-left: 10px; letter-spacing: 0px;">获取中</div>
+            <div id="fw" style="transform: scaleX(0.8); letter-spacing: 0px; margin-left: 303px; font-size: 6.5px; margin-bottom: 0px; font-weight: bold; margin-top: -1.8px;">获取中</div>
         </div>
     </div>
     <div>
@@ -114,6 +115,7 @@
             $("#watermarkTextc").text(formattedDate);
             $("#watermarkInputb").val('广东省广州市白云区龙井西路4号');
             $("#watermarkInputc").val(formattedDate);
+            
             $('#startCamera').click(function () {
                 $('#imageElement').hide();
                 $('#videoElement').show();
@@ -129,16 +131,24 @@
                     });
                 }
             });
+
             $('#uploadImage').change(function (event) {
                 $('#videoElement').hide();
                 $('#imageElement').show();
                 const file = event.target.files[0];
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    $('#imageElement').attr('src', e.target.result);
+                    const img = new Image();
+                    img.onload = function() {
+                        const aspectRatio = img.width / img.height;
+                        $('#videoContainer').css('height', $('#videoContainer').width() / aspectRatio + 'px');
+                        $('#imageElement').attr('src', e.target.result);
+                    }
+                    img.src = e.target.result;
                 }
                 reader.readAsDataURL(file);
             });
+
             $('#updateWatermark').click(function () {
                 watermarka.textContent = $('#watermarkInputa').val();
                 watermarkb.textContent = $('#watermarkInputb').val();
@@ -146,6 +156,7 @@
                 $("#fw").text(generateRandomString(14));
             });
         });
+
         function generateRandomString(length) {
             const characters = 'ABCDEFGHIJKMNOPQRSTUVWXYZ0123456789';
             let result = '';
